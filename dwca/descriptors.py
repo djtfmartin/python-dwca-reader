@@ -16,7 +16,7 @@ import xml.etree.ElementTree as ET
 from typing import Optional, List, Dict, Set
 from xml.etree.ElementTree import Element
 
-from dwca.exceptions import InvalidArchive
+from dwca.exceptions import InvalidArchive, BadlyFormedMetaXml
 
 
 class DataFileDescriptor(object):
@@ -150,10 +150,14 @@ class DataFileDescriptor(object):
         :type section_tag: :class:`xml.etree.ElementTree.Element`
         """
         if section_tag.tag == 'core':
+            if section_tag.find('id') is None:
+                raise BadlyFormedMetaXml("The core section of the metafile must contain an id element.")
             id_index = int(section_tag.find('id').get('index'))
             coreid_index = None
         else:
             id_index = None
+            if section_tag.find('coreid') is None:
+                raise BadlyFormedMetaXml("The extension section of the metafile must contain a coreid element.")
             coreid_index = int(section_tag.find('coreid').get('index'))
 
         fields = []
@@ -161,8 +165,12 @@ class DataFileDescriptor(object):
             default = field_tag.get('default', None)
 
             # Default fields don't have an index attribute
-            index = (int(field_tag.get('index')) if field_tag.get('index') else None)
+            try:
+                index = int(field_tag.get('index')) if field_tag.get('index') else None
+            except (TypeError, ValueError):
+                raise BadlyFormedMetaXml(f"The index attribute of a field {field_tag.attrib['term']} is not an integer.")
 
+            index = (int(field_tag.get('index')) if field_tag.get('index') else None)
             fields.append({'term': field_tag.get('term'), 'index': index, 'default': default})
 
         file_encoding = section_tag.get('encoding')

@@ -9,6 +9,10 @@ class InvalidArchive(Exception):
     """The archive appears to be invalid."""
 
 
+class BadlyFormedMetaXml(Exception):
+    """The meta.xml appears to be invalid."""
+
+
 class InvalidSimpleArchive(InvalidArchive):
     """The simple archive appears to be invalid."""
 

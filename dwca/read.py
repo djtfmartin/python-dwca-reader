@@ -110,7 +110,11 @@ class DwCAReader(object):
 
         #: A :class:`xml.etree.ElementTree.Element` instance containing the (scientific) metadata
         #: of the archive, or `None` if the archive has no metadata.
-        self.metadata = self._parse_metadata_file()  # type: Optional[Element]
+        self.metadata = None
+        try:
+            self.metadata = self._parse_metadata_file()  # type: Optional[Element]
+        except Exception as e:
+            raise InvalidArchive("Problem parsing the eml.xml file. The archive contains invalid metadata: {}".format(e))
 
         #: If the archive contains source-level metadata (typically, GBIF downloads), this is a dict such as::
         #:
@@ -118,7 +122,11 @@ class DwCAReader(object):
         #:       'dataset2_UUID': <dataset2 EML> (xml.etree.ElementTree.Element object), ...}
         #:
         #: See :doc:`gbif_results` for more details.
-        self.source_metadata = self._get_source_metadata()  # type: Dict[str, Element]
+        self.source_metadata = None
+        try:
+            self.source_metadata = self._get_source_metadata()  # type: Dict[str, Element]
+        except Exception as e:
+            raise InvalidArchive("Problem parsing the source level metadata. The archive contains invalid metadata: {}".format(e))
 
         if self.descriptor:  # We have an Archive descriptor that we can use to access data files.
             #: An instance of :class:`dwca.files.CSVDataFile` for the core data file.
