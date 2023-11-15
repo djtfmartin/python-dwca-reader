@@ -18,4 +18,4 @@ class InvalidSimpleArchive(InvalidArchive):
 
 
 class NotADataFile(Exception):
-    """The file doesn't exists or is not a data file."""
+    """The file doesn't exist or is not a data file."""

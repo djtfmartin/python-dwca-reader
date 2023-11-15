@@ -6,7 +6,7 @@ from array import array
 from typing import List, Union, IO, Dict, Optional
 
 from dwca.descriptors import DataFileDescriptor
-from dwca.rows import CoreRow, ExtensionRow
+from dwca.rows import CoreRow, ExtensionRow, Row
 
 
 class CSVDataFile(object):
@@ -90,26 +90,15 @@ class CSVDataFile(object):
             core_id2: [8, 10] # Rows at position 8 and 10 references a Core Row whose ID is core_id2
             }
 
-        :raises: AttributeError if accessed on a core data file.
-
         .. warning::
 
-            for permformance reasons, dictionary values are arrays('L') instead of regular python lists
-
-        .. warning::
-
-            coreid_index is only available for extension data files.
+            for performance reasons, dictionary values are arrays('L') instead of regular python lists
 
         .. warning::
 
             Creating this index can be time and memory consuming for large archives, so it's created on the fly
             at first access.
         """
-        if self.file_descriptor.represents_corefile:
-            raise AttributeError(
-                "coreid_index is only available for extension data files"
-            )
-
         if self._coreid_index is None:
             self._coreid_index = self._build_coreid_index()
 
@@ -120,14 +109,18 @@ class CSVDataFile(object):
         index = {}  # type: Dict[str, array[int]]
 
         for position, row in enumerate(self):
-            tmp = ExtensionRow(row, position, self.file_descriptor)
-            index.setdefault(tmp.core_id, array('L')).append(position)
+            if self.file_descriptor.represents_corefile:
+              tmp = CoreRow(row, position, self.file_descriptor)
+              index.setdefault(tmp.id, array('L')).append(position)
+            else:
+              tmp = ExtensionRow(row, position, self.file_descriptor)
+              index.setdefault(tmp.core_id, array('L')).append(position)
 
         return index
 
     # TODO: For ExtensionRow and a specific field only, generalize ?
     # TODO: What happens if called on a Core Row?
-    def get_all_rows_by_coreid(self, core_id: int) -> List[ExtensionRow]:
+    def get_all_rows_by_coreid(self, core_id: int) -> List[Row]:
         """Return a list of :class:`dwca.rows.ExtensionRow` whose Core Id field match `core_id`."""
         if core_id not in self.coreid_index:
             return []
