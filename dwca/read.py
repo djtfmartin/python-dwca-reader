@@ -110,11 +110,7 @@ class DwCAReader(object):
 
         #: A :class:`xml.etree.ElementTree.Element` instance containing the (scientific) metadata
         #: of the archive, or `None` if the archive has no metadata.
-        self.metadata = None
-        try:
-            self.metadata = self._parse_metadata_file()  # type: Optional[Element]
-        except Exception as e:
-            raise InvalidArchive("Problem parsing the eml.xml file. The archive contains invalid metadata: {}".format(e))
+        self.metadata = self._parse_metadata_file()  # type: Optional[Element]
 
         #: If the archive contains source-level metadata (typically, GBIF downloads), this is a dict such as::
         #:

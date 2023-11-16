@@ -170,7 +170,6 @@ class DataFileDescriptor(object):
             except (TypeError, ValueError):
                 raise BadlyFormedMetaXml(f"The index attribute of a field {field_tag.attrib['term']} is not an integer.")
 
-            index = (int(field_tag.get('index')) if field_tag.get('index') else None)
             fields.append({'term': field_tag.get('term'), 'index': index, 'default': default})
 
         file_encoding = section_tag.get('encoding')
